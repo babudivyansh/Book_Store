@@ -10,11 +10,12 @@
 @Title : Book Store app using Sanic.
 """
 from sanic import Sanic
-from Routes.user import register_user
+from Routes.user import register_user, login
 
 app = Sanic(__name__)
 
 # Route the user registration API
+app.add_route(login, '/login/', methods=['POST'])
 app.add_route(register_user, '/register/', methods=['POST'])
 
 
