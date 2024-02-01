@@ -9,3 +9,6 @@ DATABASE_NAME = getenv("DATABASE_NAME")
 
 PORT = getenv("PORT")
 HOST = getenv('localhost')
+
+SECRET_KEY = getenv("SECRET_KEY")
+ALGORITHM = getenv("ALGORITHM")
