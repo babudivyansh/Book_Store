@@ -7,7 +7,7 @@ import logging
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-logging.basicConfig(filename='./fundoo_notes.log', encoding='utf-8', level=logging.DEBUG,
+logging.basicConfig(filename='./book_store.log', encoding='utf-8', level=logging.DEBUG,
                     format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 logger = logging.getLogger()
 
