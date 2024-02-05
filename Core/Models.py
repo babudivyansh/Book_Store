@@ -1,9 +1,6 @@
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy import Column, String, BigInteger, Boolean
-from Core.Settings import DATABASE_NAME, DATABASE_PASSWORD
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, String, BigInteger, Boolean, ForeignKey
 
-async_engine = create_async_engine(f"postgresql+asyncpg://postgres:{DATABASE_PASSWORD}@localhost:5432/{DATABASE_NAME}", echo=True, future=True)
 Base = declarative_base()
 
 
@@ -20,3 +17,22 @@ class User(Base):
     location = Column(String(150))
     is_verified = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
+    book = relationship('Book', back_populates='user')
+
+    def __str__(self):
+        return self.username
+
+
+class Book(Base):
+    __tablename__ = 'book'
+
+    id = Column(BigInteger, primary_key=True, index=True)
+    book_name = Column(String, nullable=False)
+    author = Column(String, nullable=False)
+    price = Column(BigInteger, nullable=False)
+    quantity = Column(BigInteger, nullable=False)
+    user_id = Column(BigInteger, ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user = relationship('User', back_populates='book')
+
+    def __str__(self):
+        return self.book_name
