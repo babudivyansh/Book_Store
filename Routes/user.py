@@ -1,7 +1,6 @@
 from sanic import Blueprint, response
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from Core.Models import User
 from Core.Schema import UserValidator, UserLogin
 from sanic_ext import validate, openapi
@@ -12,7 +11,7 @@ from tasks import send_verification_email
 jwt_handler = JWT()
 app = Blueprint('user')
 
-async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 
 # Middleware to provide a database session to each request
@@ -54,13 +53,14 @@ async def register_user(request, body):
         user_validator['password'] = Hasher.get_hash_password(user_validator['password'])
         user_super_key = user_validator['is_superuser']
         if user_super_key == SUPER_KEY:  # key is in the form of string
-            user_validator.update({'is_super_user': True})
-        user_validator.pop('is_superuser')
+            user_validator.update({'is_superuser': True})
+        # user_validator.pop('is_superuser')
         user = User(**user_validator)
         async with async_session() as session:
             session.add(user)
             await session.commit()
             await session.refresh(user)
+            request.ctx.user_id = user.id
             token = jwt_handler.jwt_encode({'user_id': user.id})
             send_verification_email(token, user.email)
         return response.json({"message": "User registered successfully", "user_id": user.id}, status=201)
