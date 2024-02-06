@@ -13,6 +13,15 @@ jwt_handler = JWT()
 # Middleware for JWT authentication
 @app.middleware("request")
 async def authenticate(request):
+    """
+    Middleware function for JWT authentication.
+
+    Args:
+        request: Request object.
+
+    Returns:
+        JSON response indicating the success or failure of user verification.
+    """
     try:
         token = request.headers.get("authorization").split(" ")[1]
         if not token:
@@ -40,6 +49,16 @@ async def authenticate(request):
 )
 @validate(json=BookValidator)
 async def add_book(request, body):
+    """
+    Endpoint for registering a book.
+
+    Args:
+        request: Request object.
+        body: Book data.
+
+    Returns:
+        JSON response indicating the success or failure of book registration.
+    """
     try:
         async with async_session() as session:
             user = await session.execute(select(User).filter_by(id=request.ctx.user.id))
@@ -68,6 +87,15 @@ async def add_book(request, body):
 @app.get('/get_all_book')
 @openapi.definition(tag='Book', secured='authorization')
 async def get_book(request):
+    """
+    Endpoint for retrieving all books.
+
+    Args:
+        request: Request object.
+
+    Returns:
+        JSON response containing information about all books.
+    """
     try:
         async with async_session() as session:
             books = await session.execute(select(Book))
@@ -100,6 +128,17 @@ async def get_book(request):
 @openapi.definition(body={'application/json': BookValidator.model_json_schema()}, tag='Book', secured='authorization')
 @validate(json=BookValidator)
 async def update_book(request, body, book_id):
+    """
+    Endpoint for updating a book.
+
+    Args:
+        request: Request object.
+        body: Updated book data.
+        book_id (int): ID of the book to be updated.
+
+    Returns:
+        JSON response indicating the success or failure of book update.
+    """
     try:
         async with async_session() as session:
             book = await session.execute(select(Book).filter_by(id=book_id, user_id=request.ctx.user.id))
@@ -126,6 +165,16 @@ async def update_book(request, body, book_id):
 @app.delete('/<book_id:int>')
 @openapi.definition(tag='Book', secured='authorization')
 async def delete_book(request, book_id: int):  # Ensure the function signature includes the book_id parameter
+    """
+    Endpoint for deleting a book.
+
+    Args:
+        request: Request object.
+        book_id (int): ID of the book to be deleted.
+
+    Returns:
+        JSON response indicating the success or failure of book deletion.
+    """
     try:
         async with async_session() as session:
             book = await session.execute(select(Book).filter_by(id=book_id, user_id=request.ctx.user.id))
