@@ -12,6 +12,7 @@
 from sanic import Sanic
 from Routes.user import app as ur
 from Routes.book import app as br
+from Routes.cart import cart
 
 app = Sanic(__name__)
 
@@ -28,5 +29,7 @@ app.config["API_SECURITY_DEFINITIONS"] = {
 
 app.blueprint(ur)
 app.blueprint(br)
+app.blueprint(cart)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
