@@ -85,6 +85,8 @@ async def login(request, body: UserLogin):
             user = user.scalars().first()
             if not user or not Hasher.verify_password(body.password, user.password):
                 return response.json({"message": "Invalid username or password"}, status=401)
+            if user.is_verified is False:
+                return response.json({"message": "User not verified"}, status=401)
             token = jwt_handler.jwt_encode({'user_id': user.id})
             return response.json({"message": "Login successful", "user_id": user.id, 'access_token': token}, status=200)
 
