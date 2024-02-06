@@ -22,3 +22,12 @@ class BookValidator(BaseModel):
     author: str
     price: int
     quantity: int
+
+
+class CartItemsValidator(BaseModel):
+    book_id: int
+    quantity: int
+
+    class Config:
+        orm_mode = True
+        from_attributes = True
