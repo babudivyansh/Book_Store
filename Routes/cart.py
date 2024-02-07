@@ -97,65 +97,31 @@ async def add_book_to_cart(request, body):
 
 
 @cart.get('/get')
-@openapi.definition(response={'200': {'application/json': CartItemsValidator.model_json_schema()}}, tag='Cart',
-                    secured="authorization")
-async def get_cart_details(request):
-    """
-    Endpoint to get cart details.
-
-    Args:
-        request: Request object.
-
-    Returns:
-        JSON response containing cart details.
-    """
-    try:
-        async with async_session() as session:
-            cart_data = await session.execute(select(Cart).filter_by(user_id=request.ctx.user.id))
-            cart_data = cart_data.scalars().all()
-
-            if cart_data is None:
-                raise Exception("This cart is not present")
-
-            total_quantity = sum(cart1.total_quantity for cart1 in cart_data)
-            if total_quantity == 0:
-                raise Exception("The cart is empty")
-
-            cart_info = []
-            for i in cart_data:
-                cart_data = {
-                    "price": i.total_price,
-                    "quantity": i.total_quantity
-                }
-                cart_info.append(cart_data)
-            return response.json({'message': "Cart Data found Successfully", 'status': 200, 'data': cart_data})
-    except Exception as ex:
-        return response.json({'message': str(ex), 'status': 400})
-
-
-@cart.get('/get/<cart_id:int>')
 @openapi.definition(response={200: {'application/json': CartItemsValidator.model_json_schema()}}, tag='Cart',
                     secured="authorization")
-async def get_all_cart_items_details(request, cart_id):
+async def get_all_cart_items_details(request):
     """
     Endpoint to get details of all cart items.
 
     Args:
         request: Request object.
-        cart_id (int): ID of the cart.
 
     Returns:
         JSON response containing details of all cart items.
     """
     try:
         async with async_session() as session:
-            cart_data = await session.execute(select(Cart).filter_by(id=cart_id, user_id=request.ctx.user.id))
+            cart_data = await session.execute(select(Cart).filter_by(user_id=request.ctx.user.id))
             cart_data = cart_data.scalars().one_or_none()
 
             if cart_data is None:
-                return response.json({'message': 'Cart is empty', 'status': 400})
+                raise Exception("This cart is not present")
 
-            card_items_data = await session.execute(select(CartItems).filter_by(cart_id=cart_id))
+            total_quantity = cart_data.total_quantity
+            if total_quantity == 0:
+                raise Exception("The cart is empty")
+
+            card_items_data = await session.execute(select(CartItems).filter_by(cart_id=cart_data.id))
             card_items_data = card_items_data.scalars().all()
 
             serialized_card_items_data = []
@@ -204,6 +170,6 @@ async def confirm_order(request):
             user_data = user_data.scalars().one_or_none()
 
             await session.commit()
-            return response.json({'message': 'Order Confirmation Successfully', 'status': 200})
+            return response.json({'message': 'Order Confirmed Successfully', 'status': 200})
     except Exception as ex:
         return response.json({'message': str(ex), 'status': 400})

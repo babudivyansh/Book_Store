@@ -51,10 +51,10 @@ async def register_user(request, body):
     try:
         user_validator = UserValidator.model_dump(body)
         user_validator['password'] = Hasher.get_hash_password(user_validator['password'])
-        user_super_key = user_validator['is_superuser']
+        user_super_key = user_validator['super_key']
         if user_super_key == SUPER_KEY:  # key is in the form of string
             user_validator.update({'is_superuser': True})
-        user_validator.pop('is_superuser')
+        user_validator.pop('super_key')
         user = User(**user_validator)
         async with async_session() as session:
             session.add(user)
