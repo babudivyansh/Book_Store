@@ -27,7 +27,7 @@ async def add_session_to_request(request):
 
 # Middleware to close the database session after each request
 @app.middleware('response')
-async def close_session(request):
+async def close_session(request, response):
     """
     Description: Middleware to close the asynchronous database session after each request.
     Parameter: request (Request): Sanic request object.
@@ -54,7 +54,7 @@ async def register_user(request, body):
         user_super_key = user_validator['is_superuser']
         if user_super_key == SUPER_KEY:  # key is in the form of string
             user_validator.update({'is_superuser': True})
-        # user_validator.pop('is_superuser')
+        user_validator.pop('is_superuser')
         user = User(**user_validator)
         async with async_session() as session:
             session.add(user)
@@ -62,7 +62,7 @@ async def register_user(request, body):
             await session.refresh(user)
             request.ctx.user_id = user.id
             token = jwt_handler.jwt_encode({'user_id': user.id})
-            send_verification_email(token, user.email)
+            send_verification_email.delay(token, user.email)
         return response.json({"message": "User registered successfully", "user_id": user.id}, status=201)
     except Exception as e:
         return response.json({"message": "Failed to register user", "error": str(e)}, status=500)
